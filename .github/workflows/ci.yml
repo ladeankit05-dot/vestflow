@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+      - name: Setup pnpm
+        run: npm install -g pnpm@8
+      - name: Install dependencies
+        run: pnpm install
+      - name: Lint (placeholder)
+        run: echo "Run lints here"
+      - name: Run tests (placeholder)
+        run: echo "Run package tests here"
