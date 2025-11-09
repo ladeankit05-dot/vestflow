@@ -1,0 +1,15 @@
+{
+  "name": "vestflow",
+  "private": true,
+  "version": "0.0.0",
+  "packageManager": "pnpm@8.0.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "pnpm --filter apps/web dev",
+    "build:web": "pnpm --filter apps/web build",
+    "test": "echo \"Run tests in each package\" && exit 0"
+  }
+}
