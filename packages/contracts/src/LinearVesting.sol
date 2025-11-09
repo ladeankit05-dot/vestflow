@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-/// @notice Minimal linear vesting example — use OpenZeppelin in production
-contract LinearVesting {
+import "../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+import "../lib/openzeppelin-contracts/contracts/security/ReentrancyGuard.sol";
+
+contract LinearVesting is ReentrancyGuard {
+    IERC20 public token;
     address public beneficiary;
     uint64 public start;
     uint64 public duration; // seconds
@@ -11,9 +14,18 @@ contract LinearVesting {
 
     event Released(uint256 amount);
 
-    constructor(address _beneficiary, uint64 _start, uint64 _duration, uint256 _totalAmount) {
+    constructor(
+        address _token,
+        address _beneficiary,
+        uint64 _start,
+        uint64 _duration,
+        uint256 _totalAmount
+    ) {
+        require(_token != address(0), "token 0");
         require(_beneficiary != address(0), "beneficiary 0");
         require(_duration > 0, "duration 0");
+
+        token = IERC20(_token);
         beneficiary = _beneficiary;
         start = _start;
         duration = _duration;
@@ -29,7 +41,6 @@ contract LinearVesting {
         if (elapsed >= duration) {
             return totalAmount;
         }
-        // linear pro-rata
         return (totalAmount * elapsed) / duration;
     }
 
@@ -37,11 +48,15 @@ contract LinearVesting {
         return vestedAmount(uint64(block.timestamp)) - released;
     }
 
-    function release() public {
+    function release() public nonReentrant {
+        require(msg.sender == beneficiary, "not beneficiary");
+
         uint256 amount = releasable();
         require(amount > 0, "nothing to release");
+
         released += amount;
-        // NOTE: In production, transfer tokens via ERC20.transfer
+        require(token.transfer(beneficiary, amount), "transfer failed");
+
         emit Released(amount);
     }
 }
